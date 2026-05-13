@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharday — API Reference Hub</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ff6eb4'/%3E%3Cstop offset='100%25' stop-color='%23ff9de2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cellipse cx='50' cy='62' rx='35' ry='22' fill='url(%23g)'/%3E%3Cellipse cx='34' cy='52' rx='18' ry='18' fill='url(%23g)'/%3E%3Cellipse cx='58' cy='46' rx='22' ry='22' fill='url(%23g)'/%3E%3Cellipse cx='74' cy='55' rx='16' ry='16' fill='url(%23g)'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24; --border: #2a2a3a;
+    --text: #e8e8f0; --muted: #6b6b88; --accent: #7c6dfa; --accent2: #fa6d8a;
+    --green: #4dffa0; --yellow: #ffd84d; --cyan: #4dd9ff;
+  }
+  body { font-family: 'JetBrains Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(124,109,250,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(124,109,250,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+  header { padding: 48px 0 40px; border-bottom: 1px solid var(--border); }
+  .header-inner { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .logo-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
+  .logo-badge span { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+  h1 { font-family:'Syne',sans-serif; font-size:clamp(32px,5vw,56px); font-weight:800; line-height:1.0; letter-spacing:-0.03em; }
+  h1 em { font-style:normal; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .subtitle { margin-top:12px; color:var(--muted); font-size:13px; font-weight:300; }
+  .stats { display:flex; gap:32px; }
+  .stat-num { font-family:'Syne',sans-serif; font-size:28px; font-weight:700; }
+  .stat-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-top:2px; }
+  .section-header { display:flex; align-items:center; gap:12px; padding:32px 0 20px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.15em; }
+  .section-header::after { content:''; flex:1; height:1px; background:var(--border); }
+  .platforms-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:12px; margin-bottom:48px; }
+  .platform-card { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; cursor:pointer; transition:all 0.2s; overflow:hidden; }
+  .platform-card::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at top left,var(--cc,var(--accent)) 0%,transparent 60%); opacity:0; transition:opacity 0.3s; }
+  .platform-card:hover::before, .platform-card.active::before { opacity:.08; }
+  .platform-card:hover { border-color:var(--cc,var(--accent)); transform:translateY(-2px); }
+  .platform-card.active { border-color:var(--cc,var(--accent)); background:var(--surface2); }
+  .platform-card.active .pname { color:var(--cc,var(--accent)); }
+  .picon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:12px; background:rgba(255,255,255,.05); }
+  .pname { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:4px; transition:color 0.2s; }
+  .pmeta { font-size:10px; color:var(--muted); }
+  .pcount { position:absolute; top:12px; right:12px; font-size:10px; color:var(--muted); background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:2px 6px; }
+  .endpoints-panel { display:none; animation:slideUp 0.3s ease; }
+  .endpoints-panel.visible { display:block; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .panel-header { display:flex; align-items:center; justify-content:space-between; padding:24px 0 20px; border-top:1px solid var(--border); flex-wrap:wrap; gap:12px; }
+  .ptitle { display:flex; align-items:center; gap:12px; }
+  .pbadge { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; }
+  .pclose { background:var(--surface); border:1px solid var(--border); border-radius:6px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:16px; transition:all 0.2s; }
+  .pclose:hover { color:var(--text); border-color:var(--muted); }
+  .sbox { flex:1; min-width:200px; position:relative; }
+  .sbox input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 16px 10px 40px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; outline:none; transition:border-color 0.2s; }
+  .sbox input:focus { border-color:var(--accent); }
+  .sbox input::placeholder { color:var(--muted); }
+  .sicon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:14px; }
+  .fbtns { display:flex; gap:8px; flex-wrap:wrap; }
+  .fbtn { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:8px 14px; color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:11px; cursor:pointer; transition:all 0.2s; text-transform:uppercase; letter-spacing:.08em; }
+  .fbtn:hover,.fbtn.active { border-color:var(--accent); color:var(--accent); background:rgba(124,109,250,.08); }
+  .ep-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:12px; }
+  .ep-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 18px; transition:all 0.18s; position:relative; }
+  .ep-card:hover { border-color:var(--epc,var(--border)); background:var(--surface2); }
+  .ep-card:hover .epath { color:var(--epc,var(--muted)); }
+  .ep-top { display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; }
+  .mbadge { font-size:10px; font-weight:500; letter-spacing:.08em; padding:3px 8px; border-radius:4px; flex-shrink:0; margin-top:2px; }
+  .GET    { background:rgba(77,255,160,.12); color:var(--green); border:1px solid rgba(77,255,160,.2); }
+  .POST   { background:rgba(124,109,250,.12); color:var(--accent); border:1px solid rgba(124,109,250,.2); }
+  .PUT    { background:rgba(255,216,77,.10); color:var(--yellow); border:1px solid rgba(255,216,77,.2); }
+  .DELETE { background:rgba(250,109,138,.10); color:var(--accent2); border:1px solid rgba(250,109,138,.2); }
+  .PATCH  { background:rgba(77,217,255,.10); color:var(--cyan); border:1px solid rgba(77,217,255,.2); }
+  .etblock { flex:1; min-width:0; }
+  .ename { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .epath { font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color 0.2s; }
+  .edesc { font-size:12px; color:var(--muted); line-height:1.6; font-weight:300; }
+  .etags { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .etag { font-size:10px; padding:2px 8px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .cpbtn { position:absolute; top:12px; right:12px; background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:4px 8px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); cursor:pointer; opacity:0; transition:all 0.2s; }
+  .ep-card:hover .cpbtn { opacity:1; }
+  .cpbtn:hover { color:var(--text); border-color:var(--muted); }
+  .cpbtn.done { color:var(--green); border-color:var(--green); }
+  .empty { text-align:center; padding:60px 24px; color:var(--muted); font-size:13px; }
+  .cgrp { margin-bottom:32px; }
+  .clabel { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.15em; padding:0 0 12px; display:flex; align-items:center; gap:10px; }
+  .clabel::after { content:''; flex:1; height:1px; background:var(--border); }
+  .ep-wrap { padding-bottom:60px; }
+  ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div>
+        <div class="logo-badge"><span></span> Live Reference</div>
+        <h1><em>Sharday</em></h1>
+        <p class="subtitle">// Select a platform to explore its endpoints</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="tplat">8</div><div class="stat-label">Platforms</div></div>
+        <div class="stat"><div class="stat-num" id="teps">—</div><div class="stat-label">Endpoints</div></div>
+      </div>
+    </div>
+  </header>
+  <div class="section-header">Choose Platform</div>
+  <div class="platforms-grid" id="pgrid"></div>
+  <div class="endpoints-panel" id="epanel">
+    <div class="panel-header">
+      <div class="ptitle">
+        <span id="picon" style="font-size:28px"></span>
+        <span class="pbadge" id="pname"></span>
+        <span style="font-size:12px;color:var(--muted)" id="pcnt"></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <div class="sbox"><span class="sicon">⌕</span><input type="text" id="esearch" placeholder="Filter endpoints..."></div>
+        <div class="fbtns" id="mfilters">
+          <button class="fbtn active" data-m="ALL">All</button>
+          <button class="fbtn" data-m="GET">GET</button>
+          <button class="fbtn" data-m="POST">POST</button>
+          <button class="fbtn" data-m="PUT">PUT</button>
+          <button class="fbtn" data-m="PATCH">PATCH</button>
+          <button class="fbtn" data-m="DELETE">DEL</button>
+        </div>
+        <div class="pclose" id="pclose">✕</div>
+      </div>
+    </div>
+    <div id="econt"></div>
+  </div>
+</div>
+<script>
+const P = {
+  iterable:{name:'Iterable',icon:'🔁',color:'#7c6dfa',type:'Cross-channel Marketing',endpoints:[
+    {m:'POST',n:'Create / Update User',p:'/api/users/update',d:'Create or update a user profile. Merges data if user exists; creates new if not. Supports email and userId identifiers.',t:['users']},
+    {m:'GET',n:'Get User by Email',p:'/api/users/getByEmail',d:'Retrieve a user profile and all custom fields by email address.',t:['users']},
+    {m:'GET',n:'Get User by UserId',p:'/api/users/byUserId',d:'Retrieve a user profile using the external userId rather than email.',t:['users']},
+    {m:'DELETE',n:'Delete User',p:'/api/users/{email}',d:'Permanently delete a user and all associated data. Used for GDPR right-to-erasure requests.',t:['users','gdpr']},
+    {m:'POST',n:'Bulk Update Users',p:'/api/users/bulkUpdate',d:'Upload up to 50,000 user profiles in a single request. Upserts on email or userId.',t:['users','bulk']},
+    {m:'POST',n:'Update User Email',p:'/api/users/updateEmail',d:'Change the email address on a user profile, merging duplicate records if needed.',t:['users']},
+    {m:'GET',n:'Get User Fields',p:'/api/users/getFields',d:'Return the schema of all user-level fields defined in your Iterable project.',t:['users','schema']},
+    {m:'POST',n:'Register Device Token',p:'/api/users/registerDeviceToken',d:'Associate an iOS (APNS) or Android (FCM) push token with a user profile.',t:['users','push']},
+    {m:'DELETE',n:'Forget User (GDPR)',p:'/api/users/forget',d:'Mark a user as forgotten per GDPR. Removes PII while retaining anonymized analytics data.',t:['users','gdpr']},
+    {m:'GET',n:'Get Sent Messages',p:'/api/users/getSentMessages',d:'Retrieve messages sent to a user across all channels with date range filters.',t:['users']},
+    {m:'POST',n:'Track Event',p:'/api/events/track',d:'Record a custom event for a user. Attach metadata as key-value dataFields to enrich the payload.',t:['events']},
+    {m:'POST',n:'Track Bulk Events',p:'/api/events/trackBulk',d:'Send up to 1,000 events in a single API call. Each event can target a different user.',t:['events','bulk']},
+    {m:'GET',n:'Get Events for User',p:'/api/events/{email}',d:'Retrieve all tracked events for a user by email, with optional event type and date filters.',t:['events']},
+    {m:'POST',n:'Track In-App Open',p:'/api/events/trackInAppOpen',d:'Record that a user opened an in-app message. Used to trigger downstream journey steps.',t:['events','in-app']},
+    {m:'POST',n:'Track In-App Click',p:'/api/events/trackInAppClick',d:'Record a click inside an in-app message, including which button or link was tapped.',t:['events','in-app']},
+    {m:'POST',n:'Track Push Open',p:'/api/events/trackPushOpen',d:'Record a push notification open event with optional campaign and template attribution.',t:['events','push']},
+    {m:'POST',n:'Track Purchase',p:'/api/commerce/trackPurchase',d:'Record an e-commerce purchase with line items and total. Powers purchase-triggered journeys.',t:['commerce']},
+    {m:'POST',n:'Update Cart',p:'/api/commerce/updateCart',d:'Update the current shopping cart for a user. Used to trigger abandoned-cart flows.',t:['commerce']},
+    {m:'POST',n:'Send Transactional Email',p:'/api/email/target',d:'Trigger a transactional email to a specific user using a template ID with dataField overrides.',t:['email','transactional']},
+    {m:'POST',n:'Send Push Notification',p:'/api/push/target',d:'Send a push notification to a user via a campaign or template ID. Supports iOS and Android.',t:['push']},
+    {m:'POST',n:'Send SMS',p:'/api/sms/target',d:'Trigger an SMS to a user. Requires a valid E.164 phone number and opted-in profile.',t:['sms']},
+    {m:'POST',n:'Send In-App Notification',p:'/api/inApp/target',d:'Deliver an in-app message to a specific user session on mobile or web.',t:['in-app']},
+    {m:'GET',n:'Get In-App Messages',p:'/api/inApp/getMessages',d:'Retrieve all in-app messages pending delivery for a user, for client-side rendering.',t:['in-app']},
+    {m:'GET',n:'Get All Lists',p:'/api/lists',d:'Return all static lists in the project with IDs, names, and subscriber counts.',t:['lists']},
+    {m:'POST',n:'Create List',p:'/api/lists',d:'Create a new static list with a specified name for segmentation and campaign targeting.',t:['lists']},
+    {m:'DELETE',n:'Delete List',p:'/api/lists/{listId}',d:'Permanently delete a static list. Does not delete the users contained within it.',t:['lists']},
+    {m:'POST',n:'Subscribe to List',p:'/api/lists/subscribe',d:'Add one or more users to a static list. Creates user profiles if they do not exist.',t:['lists']},
+    {m:'POST',n:'Unsubscribe from List',p:'/api/lists/unsubscribe',d:'Remove users from a list or globally unsubscribe them from all communications.',t:['lists','suppression']},
+    {m:'GET',n:'Get Users in List',p:'/api/lists/getUsers',d:'Retrieve all user profiles subscribed to a specific list. Supports pagination.',t:['lists']},
+    {m:'GET',n:'Get All Campaigns',p:'/api/campaigns',d:'List all campaigns in the project with metadata, status, and template associations.',t:['campaigns']},
+    {m:'POST',n:'Create Campaign',p:'/api/campaigns/create',d:'Create a blast or triggered campaign with specified template, lists, and suppression rules.',t:['campaigns']},
+    {m:'POST',n:'Schedule Campaign',p:'/api/campaigns/schedule',d:'Schedule a campaign to send at a future time. Supports recipient time-zone delivery mode.',t:['campaigns']},
+    {m:'POST',n:'Cancel Campaign',p:'/api/campaigns/cancel',d:'Cancel a scheduled campaign before it sends. Immediately aborts any in-progress job.',t:['campaigns']},
+    {m:'GET',n:'Get Campaign Metrics',p:'/api/campaigns/metrics',d:'Retrieve sends, opens, clicks, bounces, and unsubscribes for one or more campaigns.',t:['campaigns','analytics']},
+    {m:'GET',n:'Get Templates',p:'/api/templates',d:'List all email, push, SMS, and in-app templates with names, IDs, and modification dates.',t:['templates']},
+    {m:'GET',n:'Get Email Template',p:'/api/templates/email/get',d:'Retrieve a specific email template by ID, including its full HTML content and metadata.',t:['templates','email']},
+    {m:'POST',n:'Update Email Template',p:'/api/templates/email/update',d:'Update HTML/text content and metadata for an existing email template.',t:['templates','email']},
+    {m:'POST',n:'Upsert Email Template',p:'/api/templates/email/upsert',d:'Create or update an email template using a client-side template ID for idempotent syncing.',t:['templates','email']},
+    {m:'GET',n:'Get Catalogs',p:'/api/catalogs',d:'List all product catalogs in the project available for Liquid personalization.',t:['catalogs']},
+    {m:'PUT',n:'Upsert Catalog Items',p:'/api/catalogs/{catalogName}/items',d:'Create or replace items in a product catalog for recommendation personalization.',t:['catalogs']},
+    {m:'DELETE',n:'Delete Catalog Item',p:'/api/catalogs/{catalogName}/items/{itemId}',d:'Remove a specific item from a catalog by its unique item ID.',t:['catalogs']},
+    {m:'GET',n:'Get Workflows',p:'/api/workflows',d:'List all journey workflows with their trigger conditions and current activation status.',t:['workflows']},
+    {m:'POST',n:'Export User Events',p:'/api/export/userEvents',d:'Initiate an async export of user event data. Returns a job ID for polling and file download.',t:['export','bulk']},
+  ]},
+ 
+  marketo:{name:'Marketo',icon:'🎯',color:'#5c4ee5',type:'B2B Marketing Automation',endpoints:[
+    {m:'GET',n:'Get Access Token',p:'/identity/oauth/token',d:'Exchange client_id and client_secret for a bearer token. Tokens expire after 3,600 seconds.',t:['auth']},
+    {m:'POST',n:'Sync Leads (Upsert)',p:'/rest/v1/leads.json',d:'Create or update up to 300 lead records per call. Deduplicates on email by default; configurable.',t:['leads']},
+    {m:'GET',n:'Get Lead by ID',p:'/rest/v1/lead/{id}.json',d:'Retrieve a single lead by Marketo ID with a specified list of fields.',t:['leads']},
+    {m:'GET',n:'Get Leads by Filter',p:'/rest/v1/leads.json',d:'Query leads by filterType (email, custom field, etc.) with nextPageToken pagination.',t:['leads','query']},
+    {m:'POST',n:'Delete Leads',p:'/rest/v1/leads/delete.json',d:'Permanently delete lead records. Accepts arrays of up to 300 IDs per call.',t:['leads','gdpr']},
+    {m:'POST',n:'Merge Leads',p:'/rest/v1/leads/{id}/merge.json',d:'Merge duplicate leads. Winner keeps its data; loser record is deleted.',t:['leads','dedup']},
+    {m:'GET',n:'Describe Lead',p:'/rest/v1/leads/describe.json',d:'Return the full field schema for leads including data types and API names.',t:['leads','schema']},
+    {m:'POST',n:'Push Lead to Marketo',p:'/rest/v1/leads/push.json',d:'Create a lead and immediately associate them with a program and trigger a smart campaign.',t:['leads']},
+    {m:'POST',n:'Submit Form',p:'/rest/v1/leads/submitForm.json',d:'Simulate a Marketo form submission for a lead, triggering associated smart campaign flows.',t:['leads','forms']},
+    {m:'POST',n:'Associate Lead',p:'/rest/v1/leads/{id}/associate.json',d:'Associate an anonymous lead with an identified person record using a Munchkin cookie.',t:['leads']},
+    {m:'POST',n:'Change Lead Program Status',p:'/rest/v1/leads/programs/{programId}/status.json',d:'Update the program membership status for multiple leads at once.',t:['leads','programs']},
+    {m:'GET',n:'Get Lead Partitions',p:'/rest/v1/leads/partitions.json',d:'List all lead partitions in the instance. Used for workspace-partitioned Marketo accounts.',t:['leads','schema']},
+    {m:'POST',n:'Create Lead Fields',p:'/rest/v1/leads/schema/fields.json',d:'Programmatically create new custom lead fields without accessing the Marketo UI.',t:['leads','schema']},
+    {m:'GET',n:'Get Lead Fields',p:'/rest/v1/leads/schema/fields.json',d:'Retrieve all lead fields with their API names, data types, and display names.',t:['leads','schema']},
+    {m:'GET',n:'Get Lead Activities',p:'/rest/v1/activities.json',d:'Retrieve a paginated stream of activities for leads, filterable by activity type and date range.',t:['activities']},
+    {m:'GET',n:'Get Activity Types',p:'/rest/v1/activities/types.json',d:'List all activity types (email open, form fill, etc.) with their IDs and attribute schema.',t:['activities','schema']},
+    {m:'GET',n:'Get Lead Changes',p:'/rest/v1/activities/leadchanges.json',d:'Retrieve field-level changes to lead records for sync and audit purposes.',t:['activities']},
+    {m:'GET',n:'Get Deleted Leads',p:'/rest/v1/activities/deletedleads.json',d:'List leads deleted in a given date range using paging tokens for streaming.',t:['activities','gdpr']},
+    {m:'POST',n:'Add Custom Activities',p:'/rest/v1/activities/external.json',d:'Log custom (external) activity records against lead profiles for offline interaction tracking.',t:['activities']},
+    {m:'GET',n:'Get Paging Token',p:'/rest/v1/activities/pagingtoken.json',d:'Get a position token for a datetime to begin streaming activities or changes.',t:['activities']},
+    {m:'GET',n:'Get Campaigns',p:'/rest/v1/campaigns.json',d:'List smart campaigns with optional filters by name, type, and program ID.',t:['campaigns']},
+    {m:'GET',n:'Get Campaign by ID',p:'/rest/v1/campaigns/{id}.json',d:'Retrieve details of a single smart campaign including its smart list trigger summary.',t:['campaigns']},
+    {m:'POST',n:'Request (Trigger) Campaign',p:'/rest/v1/campaigns/{id}/trigger.json',d:'Trigger a smart campaign for a specific set of leads. Used for transactional sends.',t:['campaigns','transactional']},
+    {m:'POST',n:'Schedule Batch Campaign',p:'/rest/v1/campaigns/{id}/schedule.json',d:'Schedule a batch campaign run with optional token overrides for dynamic personalization.',t:['campaigns']},
+    {m:'POST',n:'Add to List',p:'/rest/v1/lists/{listId}/leads.json',d:'Add leads to a static list by list ID. Accepts up to 300 leads per call.',t:['lists']},
+    {m:'DELETE',n:'Remove from List',p:'/rest/v1/lists/{listId}/leads.json',d:'Remove leads from a static list. Does not delete the lead records themselves.',t:['lists']},
+    {m:'GET',n:'Get Lists',p:'/rest/v1/lists.json',d:'Retrieve static lists with optional name and program ID filters.',t:['lists']},
+    {m:'POST',n:'Create Static List',p:'/asset/v1/staticLists.json',d:'Create a new named static list and optionally associate it with a folder.',t:['lists']},
+    {m:'GET',n:'Member of List',p:'/rest/v1/lists/{listId}/leads/ismember.json',d:'Check whether one or more leads are members of a specific static list.',t:['lists']},
+    {m:'POST',n:'Create Smart Campaign',p:'/rest/asset/v1/smartCampaigns.json',d:'Create a new smart campaign asset within a specified program folder.',t:['smart-campaigns']},
+    {m:'POST',n:'Activate Smart Campaign',p:'/rest/asset/v1/smartCampaign/{id}/activate.json',d:'Activate a trigger-based smart campaign so it begins processing trigger events.',t:['smart-campaigns']},
+    {m:'POST',n:'Deactivate Smart Campaign',p:'/rest/asset/v1/smartCampaign/{id}/deactivate.json',d:'Deactivate a running smart campaign to stop it from processing new triggers.',t:['smart-campaigns']},
+    {m:'GET',n:'Get Smart Campaigns',p:'/rest/asset/v1/smartCampaigns.json',d:'List all smart campaigns in the instance with their activation status and folder.',t:['smart-campaigns']},
+    {m:'GET',n:'Get Programs',p:'/rest/asset/v1/programs.json',d:'List all marketing programs with type, status, channel, and tag metadata.',t:['programs']},
+    {m:'POST',n:'Create Program',p:'/rest/asset/v1/programs.json',d:'Create a new program of any type (email, event, engagement, default) within a folder.',t:['programs']},
+    {m:'POST',n:'Clone Program',p:'/rest/asset/v1/program/{id}/clone.json',d:'Clone an existing program with all its assets into a target folder.',t:['programs']},
+    {m:'GET',n:'Get Program Members',p:'/rest/v1/programs/{programId}/members.json',d:'Retrieve all leads enrolled in a program with their membership status and custom data.',t:['programs']},
+    {m:'GET',n:'Get Emails',p:'/rest/asset/v1/emails.json',d:'List all email assets with status, folder, template, and modification timestamp.',t:['email','assets']},
+    {m:'POST',n:'Create Email',p:'/rest/asset/v1/emails.json',d:'Create a new email asset from a template with specified subject and from address.',t:['email','assets']},
+    {m:'POST',n:'Send Sample Email',p:'/rest/asset/v1/email/{id}/sendSample.json',d:'Send a test preview of an email asset to a specified address before campaign deployment.',t:['email','testing']},
+    {m:'POST',n:'Approve Email Draft',p:'/rest/asset/v1/email/{id}/approveDraft.json',d:'Approve the current draft of an email asset to make it available for campaign use.',t:['email','assets']},
+    {m:'GET',n:'Get Email Templates',p:'/rest/asset/v1/emailTemplates.json',d:'List all email templates in the instance with their content and metadata.',t:['templates','email']},
+    {m:'POST',n:'Create Email Template',p:'/rest/asset/v1/emailTemplates.json',d:'Create a new email template from raw HTML content.',t:['templates','email']},
+    {m:'GET',n:'Get Forms',p:'/rest/asset/v1/forms.json',d:'List all Marketo forms with their fields, submission counts, and associated programs.',t:['forms']},
+    {m:'POST',n:'Create Form',p:'/rest/asset/v1/forms.json',d:'Create a new Marketo form asset with a name and optional description.',t:['forms']},
+    {m:'GET',n:'Get Form Fields',p:'/rest/asset/v1/form/{id}/fields.json',d:'Retrieve all fields on a specific form including their labels, types, and validation rules.',t:['forms']},
+    {m:'GET',n:'Get Landing Pages',p:'/rest/asset/v1/landingPages.json',d:'List all landing pages in the instance with their publish status and template.',t:['landing-pages']},
+    {m:'POST',n:'Create Landing Page',p:'/rest/asset/v1/landingPages.json',d:'Create a new landing page asset from a template within a specified folder.',t:['landing-pages']},
+    {m:'POST',n:'Bulk Import Leads',p:'/bulk/v1/leads.json',d:'Initiate an asynchronous bulk lead import job from a CSV file. Monitor via job status endpoint.',t:['bulk','leads']},
+    {m:'GET',n:'Get Import Lead Status',p:'/bulk/v1/leads/batch/{id}.json',d:'Check the processing status of a bulk lead import job by its batch ID.',t:['bulk']},
+    {m:'POST',n:'Create Export Lead Job',p:'/bulk/v1/leads/export/create.json',d:'Define and create a bulk lead export job with field selection and filter criteria.',t:['bulk','export']},
+    {m:'GET',n:'Get Export Lead File',p:'/bulk/v1/leads/export/{exportid}/file.json',d:'Download the completed CSV file from a finished bulk lead export job.',t:['bulk','export']},
+    {m:'POST',n:'Sync Companies',p:'/rest/v1/companies.json',d:'Create or update company (account) records. Used for account-based marketing.',t:['companies']},
+    {m:'POST',n:'Sync Opportunities',p:'/rest/v1/opportunities.json',d:'Create or update opportunity records linked to leads for revenue attribution.',t:['opportunities']},
+    {m:'GET',n:'Get Users',p:'/userservice/management/v1/users/allusers.json',d:'List all API and UI users in the Marketo instance with their roles and workspace access.',t:['admin']},
+    {m:'POST',n:'Invite User',p:'/userservice/management/v1/users/invite.json',d:'Invite a new user to the Marketo instance and assign them API roles and workspaces.',t:['admin']},
+  ]},
+ 
+  hubspot:{name:'HubSpot',icon:'🟠',color:'#ff7a59',type:'CRM & Marketing Platform',endpoints:[
+    {m:'POST',n:'Create Contact',p:'/crm/v3/objects/contacts',d:'Create a new contact record with any standard or custom properties.',t:['contacts','crm']},
+    {m:'GET',n:'Get Contact',p:'/crm/v3/objects/contacts/{id}',d:'Retrieve a single contact by HubSpot ID with a specified list of properties.',t:['contacts']},
+    {m:'PATCH',n:'Update Contact',p:'/crm/v3/objects/contacts/{id}',d:'Partially update one or more properties on an existing contact record.',t:['contacts']},
+    {m:'DELETE',n:'Delete Contact',p:'/crm/v3/objects/contacts/{id}',d:'Archive a contact. Archived records are hidden but recoverable for 90 days.',t:['contacts','gdpr']},
+    {m:'POST',n:'Search Contacts',p:'/crm/v3/objects/contacts/search',d:'Query contacts using filter groups, sorts, and pagination. Supports up to 5 filter groups with 18 total filters.',t:['contacts','query']},
+    {m:'POST',n:'Batch Create Contacts',p:'/crm/v3/objects/contacts/batch/create',d:'Create up to 100 contact records in a single request with partial failure reporting.',t:['contacts','bulk']},
+    {m:'POST',n:'Batch Read Contacts',p:'/crm/v3/objects/contacts/batch/read',d:'Retrieve a batch of contacts by ID or a unique identifier property.',t:['contacts','bulk']},
+    {m:'POST',n:'Batch Update Contacts',p:'/crm/v3/objects/contacts/batch/update',d:'Update multiple contact records at once. Returns partial success responses on errors.',t:['contacts','bulk']},
+    {m:'POST',n:'Create Company',p:'/crm/v3/objects/companies',d:'Create a company record. Include domain to deduplicate against existing companies.',t:['companies','crm']},
+    {m:'GET',n:'Get Company',p:'/crm/v3/objects/companies/{id}',d:'Retrieve a company record by HubSpot ID with specified properties.',t:['companies']},
+    {m:'PATCH',n:'Update Company',p:'/crm/v3/objects/companies/{id}',d:'Partially update company properties without overwriting the full record.',t:['companies']},
+    {m:'POST',n:'Search Companies',p:'/crm/v3/objects/companies/search',d:'Query companies using filter groups, property-based sorting, and pagination.',t:['companies','query']},
+    {m:'POST',n:'Create Deal',p:'/crm/v3/objects/deals',d:'Create a new deal in a pipeline with stage, amount, and close date properties.',t:['deals','crm']},
+    {m:'GET',n:'Get Deal',p:'/crm/v3/objects/deals/{id}',d:'Retrieve a single deal record with all default and custom properties.',t:['deals']},
+    {m:'PATCH',n:'Update Deal',p:'/crm/v3/objects/deals/{id}',d:'Update deal properties like pipeline stage, amount, or expected close date.',t:['deals']},
+    {m:'POST',n:'Search Deals',p:'/crm/v3/objects/deals/search',d:'Query deals with pipeline stage, close date, and custom property filters.',t:['deals','query']},
+    {m:'POST',n:'Create Ticket',p:'/crm/v3/objects/tickets',d:'Create a service ticket with pipeline stage, subject, and associated contact.',t:['tickets','crm']},
+    {m:'POST',n:'Search Tickets',p:'/crm/v3/objects/tickets/search',d:'Query tickets by pipeline, status, associated contact, or custom properties.',t:['tickets','query']},
+    {m:'POST',n:'Create Association (Batch)',p:'/crm/associations/2026-03/{from}/{to}/batch/create',d:'Associate CRM objects in bulk (contacts to companies, deals to contacts) with labeled types.',t:['associations']},
+    {m:'POST',n:'Read Associations (Batch)',p:'/crm/associations/2026-03/{from}/{to}/batch/read',d:'Retrieve all associated records for a batch of up to 1,000 objects.',t:['associations']},
+    {m:'POST',n:'Delete Associations (Batch)',p:'/crm/associations/2026-03/{from}/{to}/batch/archive',d:'Remove associations between a batch of CRM record pairs.',t:['associations']},
+    {m:'GET',n:'Get Properties',p:'/crm/v3/properties/{objectType}',d:'List all standard and custom properties for a given CRM object type.',t:['properties','schema']},
+    {m:'POST',n:'Create Property',p:'/crm/v3/properties/{objectType}',d:'Create a new custom property on a CRM object with type, label, and group configuration.',t:['properties','schema']},
+    {m:'PATCH',n:'Update Property',p:'/crm/v3/properties/{objectType}/{propertyName}',d:"Update a property's label, description, or dropdown options without changing its internal name.",t:['properties','schema']},
+    {m:'GET',n:'Get Pipelines',p:'/crm/pipelines/2026-03/{objectType}',d:'List all pipelines for deals or tickets with their stages and display order.',t:['pipelines']},
+    {m:'POST',n:'Create Pipeline',p:'/crm/pipelines/2026-03/{objectType}',d:'Create a new pipeline with custom stages, display orders, and deal probabilities.',t:['pipelines']},
+    {m:'GET',n:'Audit Pipeline Changes',p:'/crm/pipelines/2026-03/{objectType}/{pipelineId}/audit',d:'View a chronological log of all changes made to a pipeline and its stages.',t:['pipelines','audit']},
+    {m:'POST',n:'Create List',p:'/crm/v3/lists',d:'Create a MANUAL, DYNAMIC, or SNAPSHOT contact list with optional filter criteria.',t:['lists']},
+    {m:'GET',n:'Get List',p:'/crm/v3/lists/{listId}',d:'Retrieve a single list definition including its type, filters, and current record count.',t:['lists']},
+    {m:'DELETE',n:'Delete List',p:'/crm/v3/lists/{listId}',d:'Delete a list. Can be restored within 90 days via the restore endpoint.',t:['lists']},
+    {m:'PUT',n:'Add Contacts to List',p:'/crm/v3/lists/{listId}/memberships/add',d:'Add specific contact records to a MANUAL or SNAPSHOT list by record ID.',t:['lists']},
+    {m:'PUT',n:'Remove Contacts from List',p:'/crm/v3/lists/{listId}/memberships/remove',d:'Remove specific contact records from a MANUAL list by record ID.',t:['lists']},
+    {m:'POST',n:'Send Transactional Email',p:'/marketing/v3/transactional/single-email/send',d:'Send a transactional email via a template ID to a specified recipient immediately.',t:['email','transactional']},
+    {m:'GET',n:'Get Email Events',p:'/email/public/v1/events',d:'Retrieve email send events (opens, clicks, bounces) filterable by email or recipient contact.',t:['email','analytics']},
+    {m:'GET',n:'Get Forms',p:'/marketing/v3/forms',d:'List all HubSpot forms with their fields, submission counts, and embed configurations.',t:['forms']},
+    {m:'POST',n:'Submit Form',p:'/submissions/v3/integration/submit/{portalId}/{formId}',d:'Programmatically submit data to a HubSpot form on behalf of a visitor.',t:['forms']},
+    {m:'GET',n:'Get Workflows',p:'/automation/v3/workflows',d:'List all automation workflows with their trigger definitions, actions, and active status.',t:['workflows']},
+    {m:'POST',n:'Create Note',p:'/crm/v3/objects/notes',d:'Create a note engagement and associate it with a contact, company, or deal.',t:['engagements']},
+    {m:'POST',n:'Create Task',p:'/crm/v3/objects/tasks',d:'Create a task for a rep with due date, type, and priority, associated to a CRM record.',t:['engagements']},
+    {m:'POST',n:'Create Meeting',p:'/crm/v3/objects/meetings',d:'Log a meeting with timestamp, attendees, and outcome notes tied to a CRM contact.',t:['engagements']},
+    {m:'POST',n:'Log Call',p:'/crm/v3/objects/calls',d:'Log a sales call with duration, disposition, and recording URL associated to a CRM record.',t:['engagements']},
+    {m:'POST',n:'Create Custom Object Schema',p:'/crm/v3/schemas',d:'Define a new custom CRM object type with its properties, labels, and association targets.',t:['custom-objects','schema']},
+    {m:'POST',n:'Create Custom Object Record',p:'/crm/v3/objects/{objectType}',d:'Create a record of a custom object type with its defined property values.',t:['custom-objects']},
+  ]},
+ 
+  braze:{name:'Braze',icon:'🔥',color:'#fa6d8a',type:'Customer Engagement',endpoints:[
+    {m:'POST',n:'Track Users',p:'/users/track',d:'Core ingestion endpoint. Record user attributes, custom events, and purchases. Up to 75 objects per call.',t:['users','events']},
+    {m:'POST',n:'Track Users (Bulk)',p:'/users/track/bulk',d:'High-volume variant of /users/track for large batches. Same payload with higher throughput limit.',t:['users','bulk']},
+    {m:'POST',n:'Delete Users',p:'/users/delete',d:'Schedule deletion of user profiles by external_id or braze_id. Completes within 30 days for GDPR.',t:['users','gdpr']},
+    {m:'POST',n:'Identify Users',p:'/users/identify',d:'Merge an anonymous user profile with an identified profile by linking braze_id to external_id.',t:['users','identity']},
+    {m:'POST',n:'Merge Users',p:'/users/merge',d:'Merge two user profiles. Attributes and events from the source are moved to the target profile.',t:['users','dedup']},
+    {m:'POST',n:'Create User Alias',p:'/users/alias/new',d:'Create a new alias identifier for an existing user profile for cross-platform identity linking.',t:['users','identity']},
+    {m:'POST',n:'Update User Alias',p:'/users/alias/update',d:'Update the label or ID of an existing alias on a user profile.',t:['users','identity']},
+    {m:'POST',n:'Rename External ID',p:'/users/external_ids/rename',d:'Rename an existing external_id for a user, keeping all profile data intact.',t:['users','identity']},
+    {m:'POST',n:'Export Users by ID',p:'/users/export/ids',d:'Export a batch of user profiles by external_id, braze_id, or device ID for data analysis.',t:['users','export']},
+    {m:'POST',n:'Export Users by Segment',p:'/users/export/segment',d:'Async export of all user profiles matching a segment. Returns a temporary download URL.',t:['users','export']},
+    {m:'POST',n:'Send Messages Immediately',p:'/messages/send',d:'Immediately send a message to specified users across any channel using API-only campaigns.',t:['messaging','transactional']},
+    {m:'POST',n:'Send Transactional Email',p:'/transactional/v1/campaigns/{campaign_id}/send',d:'Send a transactional email to a single user via a dedicated transactional campaign ID.',t:['email','transactional']},
+    {m:'POST',n:'Send Campaign (API-Triggered)',p:'/campaigns/trigger/send',d:'Trigger a Braze dashboard campaign for specified users with optional property overrides.',t:['messaging','campaigns']},
+    {m:'POST',n:'Send Canvas (API-Triggered)',p:'/canvas/trigger/send',d:'Inject users into a Canvas entry source for journey enrollment.',t:['messaging','canvas']},
+    {m:'POST',n:'Schedule Messages',p:'/messages/schedule/create',d:'Schedule a one-time message for future delivery with optional local-time-zone targeting.',t:['messaging','schedule']},
+    {m:'POST',n:'Update Scheduled Messages',p:'/messages/schedule/update',d:'Update the schedule or message content of a previously scheduled message.',t:['messaging','schedule']},
+    {m:'POST',n:'Delete Scheduled Messages',p:'/messages/schedule/delete',d:'Cancel and delete a scheduled message before it sends.',t:['messaging','schedule']},
+    {m:'GET',n:'Get Scheduled Broadcasts',p:'/messages/scheduled_broadcasts',d:'List all upcoming scheduled campaigns and Canvases with their scheduled delivery times.',t:['messaging','schedule']},
+    {m:'POST',n:'Schedule API-Triggered Campaign',p:'/campaigns/trigger/schedule/create',d:'Schedule an API-triggered campaign for future delivery to specified users.',t:['campaigns','schedule']},
+    {m:'POST',n:'Schedule API-Triggered Canvas',p:'/canvas/trigger/schedule/create',d:'Schedule a Canvas entry for future delivery via API-triggered injection.',t:['canvas','schedule']},
+    {m:'POST',n:'Create Send IDs',p:'/sends/id/create',d:'Generate send IDs to track individual API-only message sends without creating a campaign.',t:['messaging','analytics']},
+    {m:'GET',n:'List Campaigns',p:'/campaigns/list',d:'Retrieve a paginated list of campaigns with name, API identifier, and tags.',t:['campaigns']},
+    {m:'GET',n:'Get Campaign Details',p:'/campaigns/details',d:'Retrieve full configuration details for a specific campaign by its API identifier.',t:['campaigns']},
+    {m:'GET',n:'Get Campaign Analytics',p:'/campaigns/data_series',d:'Retrieve daily analytics for a campaign including sends, opens, clicks, and conversions.',t:['campaigns','analytics']},
+    {m:'POST',n:'Duplicate Campaign',p:'/campaigns/duplicate',d:'Create an exact duplicate of an existing campaign in the same workspace.',t:['campaigns']},
+    {m:'GET',n:'List Canvases',p:'/canvas/list',d:'List all Canvases in the workspace with their names, IDs, tags, and enable status.',t:['canvas']},
+    {m:'GET',n:'Get Canvas Details',p:'/canvas/details',d:'Retrieve the full configuration of a Canvas including all steps and their message content.',t:['canvas']},
+    {m:'GET',n:'Get Canvas Analytics',p:'/canvas/data_series',d:'Retrieve daily performance analytics for a Canvas broken down by step.',t:['canvas','analytics']},
+    {m:'GET',n:'List Segments',p:'/segments/list',d:'Retrieve all user segments with names, API IDs, and analytics tracking status.',t:['segments']},
+    {m:'GET',n:'Get Segment Details',p:'/segments/details',d:'Retrieve segment definition and current estimated membership count.',t:['segments']},
+    {m:'GET',n:'Get Segment Analytics',p:'/segments/data_series',d:'Retrieve daily segment size over time for growth and engagement trend analysis.',t:['segments','analytics']},
+    {m:'POST',n:'Update Subscription Status',p:'/v2/subscription/status/set',d:'Update email or SMS subscription state for multiple users in a single bulk call.',t:['subscriptions']},
+    {m:'GET',n:'Get Subscription Group Status',p:'/subscription/status/get',d:"Retrieve a user's email or SMS subscription status for a specific subscription group.",t:['subscriptions']},
+    {m:'GET',n:'List User Subscription Groups',p:'/subscription/user/status',d:'List all subscription groups a user belongs to with their current opt-in status.',t:['subscriptions']},
+    {m:'GET',n:'Query Hard Bounced Emails',p:'/email/hard_bounces',d:'List email addresses on the hard bounce list with date and reason for each bounce.',t:['email','deliverability']},
+    {m:'POST',n:'Remove Hard Bounced Email',p:'/email/bounce/remove',d:'Remove an email address from the hard bounce list to allow future delivery attempts.',t:['email','deliverability']},
+    {m:'GET',n:'Query Unsubscribes',p:'/email/unsubscribes',d:'Retrieve email addresses that have unsubscribed, filterable by date range.',t:['email','suppression']},
+    {m:'POST',n:'Change Email Subscription',p:'/email/status',d:'Manually set the email subscription status (subscribed/unsubscribed/opted-in) for a user.',t:['email','subscriptions']},
+    {m:'POST',n:'Blocklist Emails',p:'/email/blocklist',d:'Add email addresses to the permanent blocklist to prevent all future sends.',t:['email','suppression']},
+    {m:'GET',n:'Query Invalid Phone Numbers',p:'/sms/invalid_phone_numbers',d:'List phone numbers marked invalid due to failed SMS delivery attempts.',t:['sms']},
+    {m:'POST',n:'Remove Invalid Phone Numbers',p:'/sms/invalid_phone_numbers/remove',d:'Remove phone numbers from the invalid list to allow SMS retries.',t:['sms']},
+    {m:'GET',n:'List Email Templates',p:'/templates/email/list',d:'Retrieve all email templates with names, API identifiers, and last modified dates.',t:['templates','email']},
+    {m:'POST',n:'Create Email Template',p:'/templates/email/create',d:'Create a new email template with HTML content for use in campaigns.',t:['templates','email']},
+    {m:'POST',n:'Update Email Template',p:'/templates/email/update',d:'Update the HTML content or metadata of an existing email template.',t:['templates','email']},
+    {m:'GET',n:'List Content Blocks',p:'/content_blocks/list',d:'List all reusable content blocks available for use in email templates.',t:['templates','content-blocks']},
+    {m:'POST',n:'Create Content Block',p:'/content_blocks/create',d:'Create a new reusable HTML content block for inclusion in email templates.',t:['templates','content-blocks']},
+    {m:'GET',n:'List Preference Centers',p:'/preference_center/v1/list',d:'Retrieve all preference centers in the workspace with their identifiers.',t:['preferences']},
+    {m:'POST',n:'Create Preference Center',p:'/preference_center/v1',d:'Create a new preference center with subscription groups and page layout configuration.',t:['preferences']},
+    {m:'GET',n:'Generate Preference Center URL',p:'/preference_center/v1/{id}/url/{userId}',d:'Generate a unique preference center URL for a specific user for inclusion in emails.',t:['preferences']},
+    {m:'POST',n:'Create Catalog',p:'/catalogs',d:'Create a new product catalog for use in Liquid personalization across campaigns.',t:['catalogs']},
+    {m:'POST',n:'Create Catalog Items (Bulk)',p:'/catalogs/{catalog_name}/items',d:'Add multiple items to a catalog asynchronously. Returns a job ID for status tracking.',t:['catalogs','bulk']},
+    {m:'PATCH',n:'Edit Catalog Item',p:'/catalogs/{catalog_name}/items/{item_id}',d:'Partially update the fields of a single catalog item by its item ID.',t:['catalogs']},
+    {m:'DELETE',n:'Delete Catalog Item',p:'/catalogs/{catalog_name}/items/{item_id}',d:'Remove a single item from a product catalog by its item ID.',t:['catalogs']},
+    {m:'GET',n:'Export Daily New Users',p:'/kpi/new_users/data_series',d:'Retrieve a time series of new user counts by date for growth reporting.',t:['analytics','kpi']},
+    {m:'GET',n:'Export Daily Active Users',p:'/kpi/dau/data_series',d:'Retrieve daily active user counts for engagement trend analysis.',t:['analytics','kpi']},
+    {m:'GET',n:'Export Monthly Active Users',p:'/kpi/mau/data_series',d:'Retrieve monthly active user counts for the last 30-day rolling window.',t:['analytics','kpi']},
+    {m:'POST',n:'Create Dashboard User (SCIM)',p:'/scim/v2/Users',d:'Create a new Braze dashboard user account with role assignments via SCIM provisioning.',t:['admin','scim']},
+  ]},
+ 
+  eloqua:{name:'Eloqua',icon:'📊',color:'#e8543a',type:'B2B Marketing (Oracle)',endpoints:[
+    {m:'POST',n:'Create Contact',p:'/api/REST/2.0/data/contact',d:'Create a new contact record with standard and custom field data.',t:['contacts']},
+    {m:'GET',n:'Get Contact by ID',p:'/api/REST/2.0/data/contact/{id}',d:"Retrieve a single contact's full profile by their Eloqua contact ID.",t:['contacts']},
+    {m:'PUT',n:'Update Contact',p:'/api/REST/2.0/data/contact/{id}',d:"Fully replace a contact record's data. Use PATCH for partial updates to avoid field erasure.",t:['contacts']},
+    {m:'DELETE',n:'Delete Contact',p:'/api/REST/2.0/data/contact/{id}',d:'Remove a contact record from Eloqua. Used for GDPR data removal workflows.',t:['contacts','gdpr']},
+    {m:'GET',n:'Search Contacts',p:'/api/REST/2.0/data/contacts',d:'Search contacts using FIQL query syntax with field filters and pagination.',t:['contacts','query']},
+    {m:'GET',n:'Get Contact Fields',p:'/api/REST/2.0/assets/contact/fields',d:'Retrieve the schema of all contact fields available in the Eloqua instance.',t:['contacts','schema']},
+    {m:'POST',n:'Create Account',p:'/api/REST/2.0/data/account',d:'Create a new company/account record for account-based marketing use cases.',t:['accounts']},
+    {m:'GET',n:'Get Account by ID',p:'/api/REST/2.0/data/account/{id}',d:'Retrieve an account record by Eloqua ID including custom field data.',t:['accounts']},
+    {m:'GET',n:'Search Accounts',p:'/api/REST/2.0/data/accounts',d:'Search account records using FIQL query syntax with sorting and pagination.',t:['accounts','query']},
+    {m:'POST',n:'Create Contact Import (Bulk)',p:'/api/bulk/2.0/contacts/imports',d:'Define a bulk contact import job with field mappings and deduplication strategy.',t:['bulk','contacts']},
+    {m:'POST',n:'Create Contact Export (Bulk)',p:'/api/bulk/2.0/contacts/exports',d:'Define a bulk contact export job with field selection and optional FIQL filter.',t:['bulk','contacts','export']},
+    {m:'POST',n:'Sync Bulk Job',p:'/api/bulk/2.0/syncs',d:'Execute a previously defined bulk import or export job and receive a sync URI.',t:['bulk']},
+    {m:'GET',n:'Get Sync Status',p:'/api/bulk/2.0/syncs/{id}',d:'Check the processing status of a bulk sync job: pending, active, success, or error.',t:['bulk']},
+    {m:'GET',n:'Get Export Data',p:'/api/bulk/2.0/syncs/{id}/data',d:'Retrieve the exported data from a completed bulk export job, with pagination.',t:['bulk','export']},
+    {m:'GET',n:'Get Import Rejections',p:'/api/bulk/2.0/syncs/{id}/rejects',d:'Retrieve records rejected during a bulk import with the failure reason for each.',t:['bulk']},
+    {m:'POST',n:'Create Activity Export (Bulk)',p:'/api/bulk/2.0/activities/exports',d:'Define an export for contact activity data: email opens, clicks, form submits, web visits.',t:['bulk','activities']},
+    {m:'POST',n:'Create Account Import (Bulk)',p:'/api/bulk/2.0/accounts/imports',d:'Define a bulk account/company import job with field mappings and sync options.',t:['bulk','accounts']},
+    {m:'GET',n:'Get Email Assets',p:'/api/REST/2.0/assets/emails',d:'List email asset definitions with search, sort, and pagination parameters.',t:['email','assets']},
+    {m:'POST',n:'Create Email Asset',p:'/api/REST/2.0/assets/email',d:'Create a new email asset with HTML content, subject line, and sender details.',t:['email','assets']},
+    {m:'PUT',n:'Update Email Asset',p:'/api/REST/2.0/assets/email/{id}',d:"Update an existing email asset's content, subject line, or metadata.",t:['email','assets']},
+    {m:'POST',n:'Send Email (Transactional)',p:'/api/REST/2.0/assets/email/deployment',d:'Deploy a transactional email to a single contact or a low-volume list (up to 100 contacts).',t:['email','transactional']},
+    {m:'GET',n:'Get Campaigns',p:'/api/REST/2.0/assets/campaigns',d:'List all campaign canvases with search, sort, and pagination support.',t:['campaigns']},
+    {m:'POST',n:'Create Campaign',p:'/api/REST/2.0/assets/campaign',d:'Create a campaign canvas with segments, email assets, and decision step logic.',t:['campaigns']},
+    {m:'GET',n:'Get Campaign by ID',p:'/api/REST/2.0/assets/campaign/{id}',d:'Retrieve full campaign definition including steps, segments, and activation status.',t:['campaigns']},
+    {m:'PUT',n:'Activate Campaign',p:'/api/REST/2.0/assets/campaign/{id}/actions/activate',d:'Activate a campaign to begin enrolling contacts from its defined segment.',t:['campaigns']},
+    {m:'DELETE',n:'Deactivate Campaign',p:'/api/REST/2.0/assets/campaign/{id}/actions/deactivate',d:'Stop a running campaign from enrolling new contacts.',t:['campaigns']},
+    {m:'GET',n:'Get Landing Pages',p:'/api/REST/2.0/assets/landingPages',d:'List landing page assets with metadata including URL, microsite, and form associations.',t:['landing-pages']},
+    {m:'POST',n:'Create Landing Page',p:'/api/REST/2.0/assets/landingPage',d:'Create a new landing page asset with HTML content and microsite association.',t:['landing-pages']},
+    {m:'GET',n:'Get Forms',p:'/api/REST/2.0/assets/forms',d:'List all Eloqua forms with their fields, submission URL, and associated processing steps.',t:['forms']},
+    {m:'POST',n:'Create Form',p:'/api/REST/2.0/assets/form',d:'Create a new Eloqua form with specified fields and a processing step definition.',t:['forms']},
+    {m:'POST',n:'Export Form Submissions (Bulk)',p:'/api/bulk/2.0/forms/{id}/exports',d:'Define a bulk export to retrieve all submissions for a specific form.',t:['forms','bulk']},
+    {m:'GET',n:'Get Custom Objects',p:'/api/REST/2.0/assets/customObjects',d:'List all custom object definitions in the Eloqua instance.',t:['custom-objects','schema']},
+    {m:'POST',n:'Create Custom Object',p:'/api/REST/2.0/assets/customObject',d:'Define a new custom data object to store non-contact data linked to contact records.',t:['custom-objects','schema']},
+    {m:'POST',n:'Create Custom Object Record',p:'/api/REST/2.0/data/customObject/{id}',d:'Create a new record for a custom object and optionally link it to a contact.',t:['custom-objects']},
+    {m:'GET',n:'Get Custom Object Records',p:'/api/REST/2.0/data/customObject/{id}',d:'Retrieve records from a custom object with optional FIQL filtering and pagination.',t:['custom-objects','query']},
+    {m:'GET',n:'Get Segments',p:'/api/REST/2.0/assets/segments',d:'List all contact segments used for campaign targeting.',t:['segments']},
+    {m:'POST',n:'Create Segment',p:'/api/REST/2.0/assets/segment',d:'Create a new contact segment with criteria-based filters for campaign targeting.',t:['segments']},
+    {m:'POST',n:'Create External Activity Import',p:'/api/bulk/2.0/activities/imports',d:'Define and import custom external (offline) activity records against contact profiles.',t:['activities','bulk']},
+    {m:'GET',n:'Get Users',p:'/api/REST/2.0/system/users',d:'List all Eloqua users with their roles, email addresses, and login names.',t:['admin']},
+    {m:'POST',n:'Create User',p:'/api/REST/2.0/system/user',d:'Create a new Eloqua user account with specified roles and permissions.',t:['admin']},
+  ]},
+ 
+  klaviyo:{name:'Klaviyo',icon:'📧',color:'#4dffa0',type:'E-commerce Email & SMS',endpoints:[
+    {m:'POST',n:'Create Profile',p:'/api/profiles/',d:'Create a new subscriber profile. Accepts email, phone_number, and all custom properties.',t:['profiles']},
+    {m:'GET',n:'Get Profiles',p:'/api/profiles/',d:'List all profiles sortable by id, created, updated, and email. Supports field filtering.',t:['profiles']},
+    {m:'GET',n:'Get Profile',p:'/api/profiles/{id}',d:'Retrieve a single profile by Klaviyo ID including subscriptions and predictive analytics.',t:['profiles']},
+    {m:'PATCH',n:'Update Profile',p:'/api/profiles/{id}',d:'Partially update profile properties without overwriting the full record.',t:['profiles']},
+    {m:'POST',n:'Create or Update Profile',p:'/api/profile-import/',d:'Upsert a single profile by email or phone_number. Creates or merges into existing data.',t:['profiles']},
+    {m:'POST',n:'Merge Profiles',p:'/api/profile-merges/',d:'Merge two profiles by moving all data from a source profile into a destination profile.',t:['profiles','dedup']},
+    {m:'POST',n:'Bulk Import Profiles',p:'/api/profile-bulk-import-jobs/',d:'Async import of a large batch of profiles. Optionally add them to a list on import.',t:['profiles','bulk']},
+    {m:'GET',n:'Get Bulk Import Job',p:'/api/profile-bulk-import-jobs/{id}',d:'Check the status of an async profile import job by its job ID.',t:['profiles','bulk']},
+    {m:'POST',n:'Subscribe Profiles',p:'/api/profile-subscription-bulk-create-jobs/',d:'Opt-in profiles to email and/or SMS marketing channels. Triggers double opt-in if configured.',t:['profiles','subscriptions']},
+    {m:'POST',n:'Unsubscribe Profiles',p:'/api/profile-subscription-bulk-delete-jobs/',d:'Opt-out profiles from email and/or SMS, suppressing them from future sends.',t:['profiles','subscriptions']},
+    {m:'POST',n:'Suppress Profiles',p:'/api/profile-suppression-bulk-create-jobs/',d:'Suppress profiles from all email sends. Used for manual opt-outs and compliance.',t:['profiles','suppression']},
+    {m:'POST',n:'Unsuppress Profiles',p:'/api/profile-suppression-bulk-delete-jobs/',d:'Remove suppression from profiles to re-enable email delivery to them.',t:['profiles','suppression']},
+    {m:'POST',n:'Create Event',p:'/api/events/',d:'Track a custom event for a profile. Events power flows and dynamic segmentation.',t:['events']},
+    {m:'POST',n:'Create Events (Bulk)',p:'/api/event-bulk-create-jobs/',d:'Create multiple events in a single async batch call. Returns a job ID for polling.',t:['events','bulk']},
+    {m:'GET',n:'Get Events',p:'/api/events/',d:'List all events with filtering by metric type and profile. Includes relationship data.',t:['events','analytics']},
+    {m:'GET',n:'Get Metrics',p:'/api/metrics/',d:'List all event metrics in the account available for reporting and segmentation.',t:['analytics','metrics']},
+    {m:'POST',n:'Create List',p:'/api/lists/',d:'Create a new static subscriber list with a name and optional opt-in type configuration.',t:['lists']},
+    {m:'GET',n:'Get Lists',p:'/api/lists/',d:'Retrieve all lists in the account with names, IDs, and opt-in type settings.',t:['lists']},
+    {m:'GET',n:'Get List',p:'/api/lists/{id}',d:'Retrieve a single list definition by its Klaviyo list ID.',t:['lists']},
+    {m:'PATCH',n:'Update List',p:'/api/lists/{id}',d:'Update the name or other metadata of an existing list.',t:['lists']},
+    {m:'DELETE',n:'Delete List',p:'/api/lists/{id}',d:'Permanently delete a list. Does not delete the profiles contained within it.',t:['lists']},
+    {m:'POST',n:'Add Profiles to List',p:'/api/lists/{id}/relationships/profiles/',d:'Add profiles to a list. Triggers double opt-in flow if configured on the list.',t:['lists']},
+    {m:'DELETE',n:'Remove Profiles from List',p:'/api/lists/{id}/relationships/profiles/',d:'Remove profiles from a list without globally unsubscribing them.',t:['lists']},
+    {m:'GET',n:'Get List Profiles',p:'/api/lists/{id}/profiles/',d:'Retrieve all profiles subscribed to a specific list with full profile data.',t:['lists']},
+    {m:'POST',n:'Create Segment',p:'/api/segments/',d:'Create a dynamic segment using conditions on profile properties, events, and list memberships.',t:['segments']},
+    {m:'GET',n:'Get Segments',p:'/api/segments/',d:'List all segments in the account with their filter definitions.',t:['segments']},
+    {m:'GET',n:'Get Segment Profiles',p:'/api/segments/{id}/profiles/',d:"Retrieve all profiles that currently match a segment's filter criteria.",t:['segments']},
+    {m:'PATCH',n:'Update Segment',p:'/api/segments/{id}',d:'Update the name or filter conditions of an existing segment.',t:['segments']},
+    {m:'DELETE',n:'Delete Segment',p:'/api/segments/{id}',d:'Permanently delete a segment. Does not affect the profiles that were in it.',t:['segments']},
+    {m:'POST',n:'Create Campaign',p:'/api/campaigns/',d:'Create a new email or SMS campaign with specified name, channel, and audience.',t:['campaigns']},
+    {m:'GET',n:'Get Campaigns',p:'/api/campaigns/',d:'List all campaigns filterable by channel (email or sms) and status.',t:['campaigns']},
+    {m:'PATCH',n:'Update Campaign',p:'/api/campaigns/{id}',d:'Update campaign metadata such as name, from label, or subject line.',t:['campaigns']},
+    {m:'DELETE',n:'Delete Campaign',p:'/api/campaigns/{id}',d:'Delete a campaign that is in draft status.',t:['campaigns']},
+    {m:'POST',n:'Send Campaign',p:'/api/campaign-send-jobs/',d:'Trigger immediate delivery of a draft campaign with a valid audience assigned.',t:['campaigns']},
+    {m:'POST',n:'Schedule Campaign',p:'/api/campaign-send-jobs/',d:'Schedule a campaign for future delivery at a specific UTC datetime.',t:['campaigns']},
+    {m:'GET',n:'Get Campaign Analytics',p:'/api/campaigns/{id}/campaign-message/',d:'Retrieve performance stats for a campaign: opens, clicks, revenue, and unsubscribes.',t:['campaigns','analytics']},
+    {m:'GET',n:'Get Flows',p:'/api/flows/',d:'List all automation flows with their trigger types, statuses, and creation dates.',t:['flows']},
+    {m:'GET',n:'Get Flow',p:'/api/flows/{id}',d:'Retrieve a single flow definition including its trigger and all action nodes.',t:['flows']},
+    {m:'PATCH',n:'Update Flow Status',p:'/api/flows/{id}',d:"Change a flow's status between draft, manual, and live.",t:['flows']},
+    {m:'GET',n:'Get Flow Actions',p:'/api/flow-actions/',d:'List all actions (email sends, SMS, delays, etc.) within flows in the account.',t:['flows']},
+    {m:'GET',n:'Get Flow Messages',p:'/api/flow-messages/',d:'Retrieve all flow message records with their template and performance data.',t:['flows','analytics']},
+    {m:'POST',n:'Create Template',p:'/api/templates/',d:'Create a new email template with HTML content for use in campaigns and flows.',t:['templates','email']},
+    {m:'GET',n:'Get Templates',p:'/api/templates/',d:'List all email templates in the account with their names and modification dates.',t:['templates','email']},
+    {m:'PATCH',n:'Update Template',p:'/api/templates/{id}',d:'Update the HTML content or name of an existing template.',t:['templates','email']},
+    {m:'DELETE',n:'Delete Template',p:'/api/templates/{id}',d:'Delete an email template.',t:['templates']},
+    {m:'POST',n:'Query Campaign Values Report',p:'/api/campaign-values-reports/',d:'Request a report of campaign performance metrics matching those shown in the Klaviyo app.',t:['analytics','reporting']},
+    {m:'POST',n:'Query Flow Values Report',p:'/api/flow-values-reports/',d:'Request a report of flow message performance data for a specified date range.',t:['analytics','reporting']},
+    {m:'POST',n:'Create Webhook',p:'/api/webhooks/',d:'Register a webhook to receive real-time event notifications for profile and subscription changes.',t:['webhooks']},
+    {m:'GET',n:'Get Webhooks',p:'/api/webhooks/',d:'List all configured webhooks with their target URLs and subscribed event topics.',t:['webhooks']},
+    {m:'POST',n:'Create Catalog',p:'/api/catalogs/',d:'Create a new product catalog for use in Klaviyo personalization and recommendations.',t:['catalogs']},
+    {m:'POST',n:'Bulk Create Catalog Items',p:'/api/catalog-item-bulk-create-jobs/',d:'Add multiple product items to a catalog asynchronously via a bulk create job.',t:['catalogs','bulk']},
+    {m:'PATCH',n:'Update Catalog Item',p:'/api/catalog-items/{id}/',d:'Update product details (price, URL, description) for a specific catalog item.',t:['catalogs']},
+  ]},
+ 
+  mailchimp:{name:'Mailchimp',icon:'🐒',color:'#ffe01b',type:'Email Marketing',endpoints:[
+    {m:'GET',n:'Get All Lists',p:'/3.0/lists',d:'Retrieve all audiences with subscriber counts, stats, and list configuration settings.',t:['lists','audiences']},
+    {m:'POST',n:'Create List',p:'/3.0/lists',d:'Create a new audience with name, from email, contact address, and permission reminder.',t:['lists','audiences']},
+    {m:'GET',n:'Get List',p:'/3.0/lists/{list_id}',d:'Retrieve settings and stats for a specific audience including open rate and click rate.',t:['lists','audiences']},
+    {m:'PATCH',n:'Update List',p:'/3.0/lists/{list_id}',d:'Update audience settings such as name, contact info, and campaign defaults.',t:['lists','audiences']},
+    {m:'DELETE',n:'Delete List',p:'/3.0/lists/{list_id}',d:'Permanently delete an audience and all its member data. This action cannot be undone.',t:['lists','audiences']},
+    {m:'GET',n:'Get List Members',p:'/3.0/lists/{list_id}/members',d:'Retrieve all members of an audience with status, tags, and merge field data.',t:['members']},
+    {m:'POST',n:'Add Member to List',p:'/3.0/lists/{list_id}/members',d:'Add a new subscriber. Set status to subscribed, pending, or unsubscribed.',t:['members']},
+    {m:'GET',n:'Get Member Info',p:'/3.0/lists/{list_id}/members/{subscriber_hash}',d:'Retrieve full profile data for a member by their MD5-hashed email address.',t:['members']},
+    {m:'PUT',n:'Add or Update Member',p:'/3.0/lists/{list_id}/members/{subscriber_hash}',d:'Create or fully replace a member record. If the member exists, their data is replaced.',t:['members']},
+    {m:'PATCH',n:'Update Member',p:'/3.0/lists/{list_id}/members/{subscriber_hash}',d:"Partially update a member's merge fields, tags, or subscription status.",t:['members']},
+    {m:'DELETE',n:'Archive Member',p:'/3.0/lists/{list_id}/members/{subscriber_hash}',d:'Archive a member from an audience. Archived members can be re-added later.',t:['members']},
+    {m:'POST',n:'Batch Subscribe/Unsubscribe',p:'/3.0/lists/{list_id}',d:'Add, update, or remove multiple members in one call. Returns counts of successful operations.',t:['members','bulk']},
+    {m:'GET',n:'Get Member Activity',p:'/3.0/lists/{list_id}/members/{subscriber_hash}/activity',d:'Retrieve the email activity history for a specific subscriber within the audience.',t:['members','analytics']},
+    {m:'POST',n:'Add or Remove Member Tags',p:'/3.0/lists/{list_id}/members/{subscriber_hash}/tags',d:'Add or remove tags from a member. Tags are used for segmentation and automation triggers.',t:['members','tags']},
+    {m:'GET',n:'List Member Tags',p:'/3.0/lists/{list_id}/members/{subscriber_hash}/tags',d:'Retrieve all tags currently applied to a specific list member.',t:['members','tags']},
+    {m:'GET',n:'List Segments',p:'/3.0/lists/{list_id}/segments',d:'List all segments (groups and tags) in an audience for targeted campaign sending.',t:['segments']},
+    {m:'GET',n:'Get Merge Fields',p:'/3.0/lists/{list_id}/merge-fields',d:'List all merge fields (custom fields) defined for an audience.',t:['merge-fields','schema']},
+    {m:'POST',n:'Create Merge Field',p:'/3.0/lists/{list_id}/merge-fields',d:'Add a new custom merge field to an audience for personalization and segmentation.',t:['merge-fields','schema']},
+    {m:'GET',n:'Get Interest Categories',p:'/3.0/lists/{list_id}/interest-categories',d:'List all interest group categories (group titles) defined in an audience.',t:['groups']},
+    {m:'POST',n:'Create Interest Category',p:'/3.0/lists/{list_id}/interest-categories',d:'Add a new interest category group for subscriber preference collection.',t:['groups']},
+    {m:'POST',n:'Add Event for Member',p:'/3.0/lists/{list_id}/members/{subscriber_hash}/events',d:'Track a custom website or in-app action for a member to trigger targeted automations.',t:['events']},
+    {m:'GET',n:'Get Events for Member',p:'/3.0/lists/{list_id}/members/{subscriber_hash}/events',d:'Retrieve all tracked custom events recorded for a specific subscriber.',t:['events']},
+    {m:'GET',n:'Get Campaigns',p:'/3.0/campaigns',d:'List all campaigns with type, status, send time, recipient list, and performance stats.',t:['campaigns']},
+    {m:'POST',n:'Create Campaign',p:'/3.0/campaigns',d:'Create a new regular, plaintext, A/B test, or RSS-triggered campaign.',t:['campaigns']},
+    {m:'GET',n:'Get Campaign',p:'/3.0/campaigns/{campaign_id}',d:'Retrieve full settings and stats for a specific campaign by ID.',t:['campaigns']},
+    {m:'PATCH',n:'Update Campaign',p:'/3.0/campaigns/{campaign_id}',d:'Update campaign settings: recipients, subject line, reply-to, or tracking options.',t:['campaigns']},
+    {m:'DELETE',n:'Delete Campaign',p:'/3.0/campaigns/{campaign_id}',d:'Permanently delete a campaign. Sent campaigns cannot be deleted.',t:['campaigns']},
+    {m:'POST',n:'Send Campaign',p:'/3.0/campaigns/{campaign_id}/actions/send',d:'Send a campaign that has passed all checklist validations immediately.',t:['campaigns']},
+    {m:'POST',n:'Schedule Campaign',p:'/3.0/campaigns/{campaign_id}/actions/schedule',d:'Schedule a campaign to send at a specific future UTC datetime.',t:['campaigns']},
+    {m:'POST',n:'Unschedule Campaign',p:'/3.0/campaigns/{campaign_id}/actions/unschedule',d:'Cancel a scheduled campaign to return it to draft status for further editing.',t:['campaigns']},
+    {m:'POST',n:'Replicate Campaign',p:'/3.0/campaigns/{campaign_id}/actions/replicate',d:'Create a duplicate of an existing campaign with all settings copied.',t:['campaigns']},
+    {m:'POST',n:'Send Test Email',p:'/3.0/campaigns/{campaign_id}/actions/test',d:'Send a test version of a campaign to up to 10 internal email addresses.',t:['campaigns','testing']},
+    {m:'GET',n:'Get Campaign Content',p:'/3.0/campaigns/{campaign_id}/content',d:'Retrieve the HTML and plain-text content of a campaign.',t:['campaigns','content']},
+    {m:'PUT',n:'Set Campaign Content',p:'/3.0/campaigns/{campaign_id}/content',d:'Set the HTML, plain-text, or template content for a campaign.',t:['campaigns','content']},
+    {m:'GET',n:'Campaign Send Checklist',p:'/3.0/campaigns/{campaign_id}/send-checklist',d:'Validate a campaign before sending and get a list of any issues to resolve.',t:['campaigns']},
+    {m:'GET',n:'Get Campaign Reports',p:'/3.0/reports',d:'Retrieve performance reports for all sent campaigns with opens, clicks, and bounces.',t:['analytics','reports']},
+    {m:'GET',n:'Get Campaign Report',p:'/3.0/reports/{campaign_id}',d:'Retrieve a detailed performance report for a specific sent campaign.',t:['analytics','reports']},
+    {m:'GET',n:'Get Open Activity',p:'/3.0/reports/{campaign_id}/open-details',d:'List all subscribers who opened a campaign with their open timestamps.',t:['analytics','reports']},
+    {m:'GET',n:'Get Click Activity',p:'/3.0/reports/{campaign_id}/click-details',d:'List all URLs in a campaign with click counts and subscriber-level click data.',t:['analytics','reports']},
+    {m:'GET',n:'Get Unsubscribed Members',p:'/3.0/reports/{campaign_id}/unsubscribes',d:'List all subscribers who unsubscribed after receiving a specific campaign.',t:['analytics','reports']},
+    {m:'GET',n:'Get Templates',p:'/3.0/templates',d:'List all email templates in the account including custom, base, and gallery templates.',t:['templates']},
+    {m:'POST',n:'Create Template',p:'/3.0/templates',d:'Create a new custom HTML email template for use in campaigns.',t:['templates']},
+    {m:'PATCH',n:'Update Template',p:'/3.0/templates/{template_id}',d:'Update the name or HTML content of a custom email template.',t:['templates']},
+    {m:'DELETE',n:'Delete Template',p:'/3.0/templates/{template_id}',d:'Permanently delete a custom template from the account.',t:['templates']},
+    {m:'GET',n:'Get Automations',p:'/3.0/automations',d:'List all classic automation workflows with status, trigger type, and email count.',t:['automations']},
+    {m:'POST',n:'Create Automation',p:'/3.0/automations',d:'Create a new classic automation workflow with specified trigger settings and email series.',t:['automations']},
+    {m:'POST',n:'Start Automation',p:'/3.0/automations/{workflow_id}/actions/start-all-emails',d:'Activate all emails in a classic automation workflow.',t:['automations']},
+    {m:'POST',n:'Pause Automation',p:'/3.0/automations/{workflow_id}/actions/pause-all-emails',d:'Pause all emails in an automation workflow, stopping new contacts from receiving them.',t:['automations']},
+    {m:'GET',n:'Get Automation Emails',p:'/3.0/automations/{workflow_id}/emails',d:'List all emails in an automation workflow with trigger settings and queue count.',t:['automations']},
+    {m:'POST',n:'Add to Automation Queue',p:'/3.0/automations/{workflow_id}/emails/{email_id}/queue',d:'Manually add a subscriber to an automation email queue, bypassing trigger conditions.',t:['automations']},
+    {m:'POST',n:'Remove from Automation',p:'/3.0/automations/{workflow_id}/removedSubscribers',d:'Remove a subscriber from a workflow. Removed subscribers cannot be re-added to the same workflow.',t:['automations']},
+    {m:'POST',n:'Trigger Customer Journey Step',p:'/3.0/customer-journeys/journeys/{journey_id}/steps/{step_id}/actions/trigger',d:'Trigger a Customer Journey API condition step for a specific contact.',t:['customer-journeys']},
+    {m:'POST',n:'Begin Batch Operation',p:'/3.0/batches',d:'Execute multiple API operations in a single call. Returns a job ID for status polling.',t:['bulk','batch']},
+    {m:'GET',n:'Get Batch Status',p:'/3.0/batches/{batch_id}',d:'Check the processing status and completion percentage of a batch operation.',t:['bulk','batch']},
+    {m:'DELETE',n:'Stop Batch Operation',p:'/3.0/batches/{batch_id}',d:'Stop a running batch operation. Already-completed operations within the batch are not reversed.',t:['bulk','batch']},
+    {m:'POST',n:'Create Store',p:'/3.0/ecommerce/stores',d:'Connect an e-commerce store to enable purchase tracking and product recommendations.',t:['ecommerce']},
+    {m:'POST',n:'Add Order',p:'/3.0/ecommerce/stores/{store_id}/orders',d:'Record a customer order with line items and revenue for purchase-based segmentation.',t:['ecommerce']},
+    {m:'POST',n:'Add Product',p:'/3.0/ecommerce/stores/{store_id}/products',d:'Add a product with variants and pricing to a connected store for recommendation emails.',t:['ecommerce']},
+    {m:'GET',n:'Get Account Info',p:'/3.0/root',d:'Retrieve metadata about the connected Mailchimp account including plan tier and contact totals.',t:['account']},
+  ]},
+ 
+  brevo:{name:'Brevo',icon:'💬',color:'#0092ff',type:'Email, SMS & CRM',endpoints:[
+    {m:'GET',n:'Get Account Info',p:'/v3/account',d:'Retrieve account details including plan info, remaining credits, and API key validity.',t:['account']},
+    {m:'POST',n:'Send Transactional Email',p:'/v3/smtp/email',d:'Send a transactional email. Supports templates, dynamic params, attachments, and custom headers.',t:['email','transactional']},
+    {m:'GET',n:'Get Transactional Email Events',p:'/v3/smtp/statistics/events',d:'Retrieve delivery events (sent, delivered, opened, clicked, bounced, spam) for transactional emails.',t:['email','analytics']},
+    {m:'GET',n:'Get Email Reports (Aggregated)',p:'/v3/smtp/statistics/aggregatedReport',d:'Get aggregated email sending statistics over a time period including open and click rates.',t:['email','analytics']},
+    {m:'GET',n:'Get Email Reports (Daily)',p:'/v3/smtp/statistics/reports',d:'Get day-by-day email performance data for detailed trend analysis.',t:['email','analytics']},
+    {m:'GET',n:'Get Transactional Email Activity',p:'/v3/smtp/emails',d:'Retrieve a list of all transactional emails sent with their delivery status and metadata.',t:['email','analytics']},
+    {m:'POST',n:'Create SMTP Template',p:'/v3/smtp/templates',d:'Create a reusable transactional email template with HTML content and optional sender.',t:['templates','email']},
+    {m:'GET',n:'Get SMTP Templates',p:'/v3/smtp/templates',d:'List all transactional email templates with names, IDs, and modification dates.',t:['templates','email']},
+    {m:'GET',n:'Get SMTP Template',p:'/v3/smtp/templates/{templateId}',d:'Retrieve a specific template by ID including its full HTML and plain-text content.',t:['templates','email']},
+    {m:'PUT',n:'Update SMTP Template',p:'/v3/smtp/templates/{templateId}',d:'Fully replace the content and settings of an existing transactional email template.',t:['templates','email']},
+    {m:'DELETE',n:'Delete SMTP Template',p:'/v3/smtp/templates/{templateId}',d:'Permanently delete a transactional email template from the account.',t:['templates','email']},
+    {m:'GET',n:'Get Email Campaigns',p:'/v3/emailCampaigns',d:'List all marketing email campaigns filterable by status (draft, sent, queued) and date range.',t:['campaigns','email']},
+    {m:'POST',n:'Create Email Campaign',p:'/v3/emailCampaigns',d:'Create a new marketing email campaign with recipients, template, subject, and sender.',t:['campaigns','email']},
+    {m:'GET',n:'Get Email Campaign',p:'/v3/emailCampaigns/{campaignId}',d:'Retrieve full settings and statistics for a specific email campaign by ID.',t:['campaigns','email']},
+    {m:'PUT',n:'Update Email Campaign',p:'/v3/emailCampaigns/{campaignId}',d:"Update a campaign's recipients, subject, template, or scheduled delivery time.",t:['campaigns','email']},
+    {m:'DELETE',n:'Delete Email Campaign',p:'/v3/emailCampaigns/{campaignId}',d:'Delete a campaign in draft status. Sent campaigns cannot be deleted.',t:['campaigns','email']},
+    {m:'POST',n:'Send Email Campaign Now',p:'/v3/emailCampaigns/{campaignId}/sendNow',d:'Send a campaign immediately, bypassing any scheduled delivery time.',t:['campaigns','email']},
+    {m:'POST',n:'Schedule Email Campaign',p:'/v3/emailCampaigns/{campaignId}/sendAt',d:'Schedule an email campaign for delivery at a specified UTC datetime.',t:['campaigns','email']},
+    {m:'POST',n:'Send Test Email',p:'/v3/emailCampaigns/{campaignId}/sendTest',d:'Send a test email to up to 50 internal addresses to preview a campaign.',t:['campaigns','testing']},
+    {m:'GET',n:'Get Campaign Report',p:'/v3/emailCampaigns/{campaignId}/report',d:'Retrieve a detailed performance report: opens, clicks, bounces, unsubscribes, soft/hard bounces.',t:['campaigns','analytics']},
+    {m:'GET',n:'Get SMS Campaigns',p:'/v3/smsCampaigns',d:'List all SMS marketing campaigns with status, scheduled time, and recipient count.',t:['campaigns','sms']},
+    {m:'POST',n:'Create SMS Campaign',p:'/v3/smsCampaigns',d:'Create a new SMS marketing campaign with content, sender name, and recipient list.',t:['campaigns','sms']},
+    {m:'POST',n:'Send SMS Campaign Now',p:'/v3/smsCampaigns/{campaignId}/sendNow',d:'Send an SMS campaign immediately to all specified recipients.',t:['campaigns','sms']},
+    {m:'POST',n:'Send Transactional SMS',p:'/v3/transactionalSMS/sms',d:'Send a single transactional or marketing SMS to a recipient phone number in E.164 format.',t:['sms','transactional']},
+    {m:'GET',n:'Get SMS Statistics',p:'/v3/transactionalSMS/statistics/aggregatedReport',d:'Retrieve aggregated SMS delivery statistics over a specified date range.',t:['sms','analytics']},
+    {m:'GET',n:'Get SMS Events',p:'/v3/transactionalSMS/statistics/events',d:'List individual SMS delivery events (delivered, failed, unsubscribed) per message.',t:['sms','analytics']},
+    {m:'POST',n:'Send WhatsApp Template',p:'/v3/whatsapp/sendMessage',d:'Send a pre-approved WhatsApp template message to a contact via phone number in E.164 format.',t:['whatsapp','transactional']},
+    {m:'POST',n:'Create Contact',p:'/v3/contacts',d:'Create an email or SMS contact. Set updateEnabled=true to upsert on existing contacts.',t:['contacts']},
+    {m:'GET',n:'Get All Contacts',p:'/v3/contacts',d:'Retrieve all contacts with optional limit, offset, modified-since, and list filters.',t:['contacts']},
+    {m:'GET',n:'Get Contact Info',p:'/v3/contacts/{identifier}',d:'Retrieve a contact by email address, phone number, or external ID.',t:['contacts']},
+    {m:'PUT',n:'Update Contact',p:'/v3/contacts/{identifier}',d:"Update a contact's attributes, blacklist status, or list memberships.",t:['contacts']},
+    {m:'DELETE',n:'Delete Contact',p:'/v3/contacts/{identifier}',d:'Permanently delete a contact record. Used for GDPR right-to-erasure.',t:['contacts','gdpr']},
+    {m:'POST',n:'Import Contacts (Bulk)',p:'/v3/contacts/import',d:'Async bulk import of contacts from a CSV file or inline JSON array. Sends a notification on completion.',t:['contacts','bulk']},
+    {m:'POST',n:'Export Contacts',p:'/v3/contacts/export',d:'Async export of contacts to a downloadable file. Returns a processId for status polling.',t:['contacts','export']},
+    {m:'GET',n:'Get Contact Stats',p:'/v3/contacts/{identifier}/campaignStats',d:'Retrieve email and SMS campaign engagement statistics for a specific contact.',t:['contacts','analytics']},
+    {m:'GET',n:'Get Contact Attributes',p:'/v3/contacts/attributes',d:'List all custom attributes (fields) defined in the account for contact profiles.',t:['contacts','schema']},
+    {m:'POST',n:'Create Contact Attribute',p:'/v3/contacts/attributes/{category}/{name}',d:'Create a new custom contact attribute with a specified data type (text, number, date, boolean).',t:['contacts','schema']},
+    {m:'DELETE',n:'Delete Contact Attribute',p:'/v3/contacts/attributes/{category}/{name}',d:'Permanently remove a custom contact attribute from all contact records.',t:['contacts','schema']},
+    {m:'GET',n:'Get All Lists',p:'/v3/contacts/lists',d:'Retrieve all contact lists with names, IDs, and subscriber counts.',t:['lists']},
+    {m:'POST',n:'Create List',p:'/v3/contacts/lists',d:'Create a new named contact list for audience segmentation.',t:['lists']},
+    {m:'GET',n:'Get List',p:'/v3/contacts/lists/{listId}',d:'Retrieve a specific list definition and its subscriber count by list ID.',t:['lists']},
+    {m:'PUT',n:'Update List',p:'/v3/contacts/lists/{listId}',d:'Update the name of an existing contact list.',t:['lists']},
+    {m:'DELETE',n:'Delete List',p:'/v3/contacts/lists/{listId}',d:'Delete a contact list. Contacts in the list are not deleted.',t:['lists']},
+    {m:'POST',n:'Add Contacts to List',p:'/v3/contacts/lists/{listId}/contacts/add',d:'Add existing contacts to a list by email addresses or contact IDs.',t:['lists']},
+    {m:'POST',n:'Remove Contacts from List',p:'/v3/contacts/lists/{listId}/contacts/remove',d:'Remove contacts from a list without deleting their profile records.',t:['lists']},
+    {m:'POST',n:'Create Event',p:'/v3/events',d:'Track a custom event for a contact to trigger automation workflows or for segmentation.',t:['events']},
+    {m:'POST',n:'Create Events (Batch)',p:'/v3/events/batch',d:'Track multiple custom events for multiple contacts in a single API call.',t:['events','bulk']},
+    {m:'GET',n:'Get Events',p:'/v3/events',d:'Retrieve all custom events tracked in the account with pagination and filtering.',t:['events']},
+    {m:'POST',n:'Create Webhook',p:'/v3/webhooks',d:'Register a webhook to receive real-time POST notifications for email, SMS, or contact events.',t:['webhooks']},
+    {m:'GET',n:'Get Webhooks',p:'/v3/webhooks',d:'List all configured webhooks with their target URLs and subscribed event types.',t:['webhooks']},
+    {m:'PUT',n:'Update Webhook',p:'/v3/webhooks/{webhookId}',d:'Update the URL or event subscriptions for an existing webhook.',t:['webhooks']},
+    {m:'DELETE',n:'Delete Webhook',p:'/v3/webhooks/{webhookId}',d:'Remove a webhook endpoint. It will no longer receive event notifications.',t:['webhooks']},
+    {m:'GET',n:'Get Senders',p:'/v3/senders',d:'List all verified sender identities (email addresses or domains) configured in the account.',t:['senders','deliverability']},
+    {m:'POST',n:'Create Sender',p:'/v3/senders',d:'Add a new sender email address and initiate the verification process.',t:['senders','deliverability']},
+    {m:'GET',n:'Get Domains',p:'/v3/senders/domains',d:'List all configured sending domains with DKIM, SPF, and DMARC authentication status.',t:['senders','deliverability']},
+    {m:'POST',n:'Authenticate Domain',p:'/v3/senders/domains/{domainName}/authenticate',d:"Trigger re-verification of a domain's DNS records for DKIM and DMARC authentication.",t:['senders','deliverability']},
+    {m:'POST',n:'Create Company (CRM)',p:'/v3/companies',d:'Create a new CRM company record for account-based marketing.',t:['crm','companies']},
+    {m:'GET',n:'Get Companies (CRM)',p:'/v3/companies',d:'List all CRM companies with optional filtering and sorting.',t:['crm','companies']},
+    {m:'PATCH',n:'Update Company (CRM)',p:'/v3/companies/{id}',d:'Update company properties such as name, industry, or custom attributes.',t:['crm','companies']},
+    {m:'POST',n:'Create Deal (CRM)',p:'/v3/crm/deals',d:'Create a new CRM deal with pipeline, stage, amount, and associated contacts.',t:['crm','deals']},
+    {m:'GET',n:'Get Deals (CRM)',p:'/v3/crm/deals',d:'Retrieve all deals with filtering by pipeline, stage, and date range.',t:['crm','deals']},
+    {m:'PATCH',n:'Update Deal (CRM)',p:'/v3/crm/deals/{id}',d:'Update deal properties like stage progression or expected close date.',t:['crm','deals']},
+  ]}
+};
+ 
+// ── Boot ──
+const pgrid = document.getElementById('pgrid');
+let active=null, method='ALL', query='';
+const total = Object.values(P).reduce((s,p)=>s+p.endpoints.length,0);
+document.getElementById('teps').textContent = total+'+';
+ 
+Object.entries(P).forEach(([k,p])=>{
+  const c=document.createElement('div');
+  c.className='platform-card';
+  c.style.setProperty('--cc',p.color);
+  c.innerHTML=`<div class="pcount">${p.endpoints.length}</div><div class="picon">${p.icon}</div><div class="pname">${p.name}</div><div class="pmeta">${p.type}</div>`;
+  c.addEventListener('click',()=>sel(k,c));
+  pgrid.appendChild(c);
+});
+ 
+function sel(k,c){
+  if(active===k){close();return;}
+  document.querySelectorAll('.platform-card').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active'); active=k; method='ALL'; query='';
+  document.getElementById('esearch').value='';
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('active',b.dataset.m==='ALL'));
+  render(k);
+  setTimeout(()=>document.getElementById('epanel').scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+function close(){
+  document.getElementById('epanel').classList.remove('visible');
+  document.querySelectorAll('.platform-card').forEach(c=>c.classList.remove('active'));
+  active=null;
+}
+function render(k){
+  const p=P[k];
+  document.getElementById('picon').textContent=p.icon;
+  document.getElementById('pname').textContent=p.name;
+  document.getElementById('epanel').classList.add('visible');
+  const q=query.toLowerCase();
+  const eps=p.endpoints.filter(e=>{
+    if(method!=='ALL'&&e.m!==method)return false;
+    if(q&&!e.n.toLowerCase().includes(q)&&!e.p.toLowerCase().includes(q)&&!e.d.toLowerCase().includes(q)&&!e.t.some(t=>t.includes(q)))return false;
+    return true;
+  });
+  document.getElementById('pcnt').textContent=`${eps.length} endpoint${eps.length!==1?'s':''}`;
+  const ec=document.getElementById('econt');
+  if(!eps.length){ec.innerHTML='<div class="empty">🔍 No endpoints match your filter.</div>';return;}
+  const groups={};
+  eps.forEach(e=>{const g=e.t[0]||'other';if(!groups[g])groups[g]=[];groups[g].push(e);});
+  ec.innerHTML='<div class="ep-wrap">'+Object.entries(groups).map(([cat,list])=>`
+    <div class="cgrp">
+      <div class="clabel">${cat}</div>
+      <div class="ep-grid">${list.map(e=>`
+        <div class="ep-card" style="--epc:${p.color}">
+          <button class="cpbtn" onclick="cp(event,'${e.p.replace(/'/g,"\\'")}')">copy path</button>
+          <div class="ep-top">
+            <span class="mbadge ${e.m}">${e.m}</span>
+            <div class="etblock">
+              <div class="ename">${e.n}</div>
+              <div class="epath">${e.p}</div>
+            </div>
+          </div>
+          <div class="edesc">${e.d}</div>
+          <div class="etags">${e.t.map(t=>`<span class="etag">${t}</span>`).join('')}</div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('')+'</div>';
+}
+function cp(e,path){
+  e.stopPropagation();
+  navigator.clipboard.writeText(path).catch(()=>{});
+  const b=e.target; b.textContent='copied!'; b.classList.add('done');
+  setTimeout(()=>{b.textContent='copy path';b.classList.remove('done');},1500);
+}
+document.getElementById('pclose').addEventListener('click',close);
+document.getElementById('mfilters').addEventListener('click',e=>{
+  if(!e.target.dataset.m)return;
+  method=e.target.dataset.m;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('active',b.dataset.m===method));
+  if(active)render(active);
+});
+document.getElementById('esearch').addEventListener('input',e=>{
+  query=e.target.value; if(active)render(active);
+});
+</script>
+</body>
+</html>
